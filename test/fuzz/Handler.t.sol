@@ -58,6 +58,7 @@ contract Handler is Test {
     function depositCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
         amountCollateral = bound(amountCollateral, 1, MAX_DEPOSIT_SIZE);
+
         vm.startPrank(msg.sender);
         collateral.mint(msg.sender, amountCollateral);
         collateral.approve(address(dsce), amountCollateral);
@@ -69,9 +70,21 @@ contract Handler is Test {
 
     function redeemCollateral(uint256 collateralSeed, uint256 amountCollateral) public {
         ERC20Mock collateral = _getCollateralFromSeed(collateralSeed);
+        (uint256 totalDscMinted, uint256 collateralValueInUsd) = dsce.getAccountInformation(msg.sender);
         uint256 maxCollateral = dsce.getCollateralBalanceOfUser(msg.sender, address(collateral));
+        if (totalDscMinted == 0) {
+            return;
+        }
+
         amountCollateral = bound(amountCollateral, 0, maxCollateral);
 
+        uint256 collateralUsdValue = dsce.getUsdValue(address(collateral), amountCollateral);
+        uint256 newTotalCollateralValueUsd = collateralValueInUsd - collateralUsdValue;
+
+        uint256 newHealthFactor = (
+            (dsce.getLiquidationThreshold() * newTotalCollateralValueUsd) / dsce.getLiquidationPrecision()
+        ) / totalDscMinted;
+        if (newHealthFactor <= dsce.getMinHealthFactor()) return;
         if (amountCollateral == 0) {
             return;
         }
