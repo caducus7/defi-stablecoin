@@ -320,10 +320,6 @@ contract DSCEngine is ReentrancyGuard {
         return getAccountCollateralValueInUsd(user);
     }
 
-    function getCollateralTokenBalance(address token, address user) public view returns (uint256) {
-        return s_collateralDeposited[user][token];
-    }
-
     function getLiquidationPrecision() public pure returns (uint256) {
         return LIQUIDATION_PRECISION;
     }
@@ -352,8 +348,4 @@ contract DSCEngine is ReentrancyGuard {
         return address(i_dsc);
     }
     // src/DSCEngine.sol
-
-    function getCollateralDeposited(address user, address tokenAddress) public view returns (uint256) {
-        return s_collateralDeposited[user][tokenAddress];
-    }
 }

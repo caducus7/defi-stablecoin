@@ -25,3 +25,26 @@
 //         targetContract(address(dsce));
 //     }
 // }
+// function mintDsc(uint256 amount) public {
+//     (uint256 totalDscMinted, uint256 totalCollateralValueUsd) = dsce.getAccountInformation(msg.sender);
+
+//     int256 maxDscToMint = 0;
+//     if (totalCollateralValueUsd / 2 > totalDscMinted) {
+//         maxDscToMint = (int256(totalCollateralValueUsd / 2)) - int256(totalDscMinted);
+//     }
+//     mintNegative++;
+
+//     if (maxDscToMint < 0) {
+//         console.log("Minting skipped: maxDscToMint is non-positive", maxDscToMint);
+//         return;
+//     }
+//     mintBeforeCalls++;
+//     amount = bound(amount, 0, uint256(maxDscToMint)); // Use `1` as lower bound if zero is invalid
+
+//     if (amount == 0) return;
+
+//     vm.startPrank(msg.sender);
+//     dsce.mintDsc(amount);
+//     vm.stopPrank();
+//     mintCalls++;
+// }

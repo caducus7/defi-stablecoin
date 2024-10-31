@@ -139,7 +139,8 @@ contract DSCEngineTest is Test {
 
         console.log("AMOUNT_COLLATERAL:", AMOUNT_COLLATERAL);
         console.log(
-            "engine.getCollateralDeposited(USER, address(weth)):", engine.getCollateralDeposited(USER, address(weth))
+            "engine.getCollateralDeposited(USER, address(weth)):",
+            engine.getCollateralBalanceOfUser(USER, address(weth))
         );
 
         uint256 redeemAmount = AMOUNT_COLLATERAL / 2;
@@ -147,7 +148,7 @@ contract DSCEngineTest is Test {
 
         engine.redeemCollateral(address(weth), redeemAmount);
 
-        uint256 userCollateral = engine.getCollateralDeposited(USER, address(weth));
+        uint256 userCollateral = engine.getCollateralBalanceOfUser(USER, address(weth));
         console.log("userCollateral:", userCollateral);
 
         assertEq(userCollateral, AMOUNT_COLLATERAL - redeemAmount);
