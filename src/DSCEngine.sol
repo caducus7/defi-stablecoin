@@ -42,7 +42,8 @@ pragma solidity ^0.8.18;
 import {DecentralizedStableCoin} from "./DecentralizedStableCoin.sol";
 import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import {IERC20} from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
-import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8//interfaces/AggregatorV3Interface.sol";
+import {AggregatorV3Interface} from "@chainlink/contracts/src/v0.8/interfaces/AggregatorV3Interface.sol";
+import {OracleLib} from "./libraries/OracleLib.sol";
 
 contract DSCEngine is ReentrancyGuard {
     /// Errors ///
@@ -56,6 +57,10 @@ contract DSCEngine is ReentrancyGuard {
     error DSCEngine__HealthFactorIsOk();
     error DSCEngine__HealthFactorNotImproved();
     error DSCEngine__NoDscMinted();
+
+    //// Types ////
+    using OracleLib for AggregatorV3Interface;
+
     /// State Variables ///
 
     uint256 private constant ADDITIONAL_FEED_PRECISION = 1e10;
@@ -292,13 +297,13 @@ contract DSCEngine is ReentrancyGuard {
 
     function getUsdValue(address token, uint256 amount) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
-        (, int256 price,,,) = priceFeed.latestRoundData();
+        (, int256 price,,,) = priceFeed.staleCheckLatestRoundData();
         return ((uint256(price) * ADDITIONAL_FEED_PRECISION) * amount) / PRECISION;
     }
 
     function getTokenAmountFromUsd(address token, uint256 usdAmountInWei) public view returns (uint256) {
         AggregatorV3Interface priceFeed = AggregatorV3Interface(s_priceFeeds[token]);
-        (, int256 price,,,) = priceFeed.latestRoundData();
+        (, int256 price,,,) = priceFeed.staleCheckLatestRoundData();
 
         // 1000$e18 * 1e18  / 2000$ * 1e10 = 0.5 e18 * e8 = 0.5000000000000000000 00000000
         return (usdAmountInWei * PRECISION) / (uint256(price) * ADDITIONAL_FEED_PRECISION);
@@ -314,6 +319,10 @@ contract DSCEngine is ReentrancyGuard {
 
     function getTotalDscMinted() public view returns (uint256) {
         return s_dscMinted[msg.sender];
+    }
+
+    function getCollateralTokenPriceFeed(address token) external view returns (address) {
+        return s_priceFeeds[token];
     }
 
     function getTotalCollateralValueInUsd(address user) public view returns (uint256) {

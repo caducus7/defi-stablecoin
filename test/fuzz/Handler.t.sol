@@ -6,6 +6,7 @@ import {Test, console} from "forge-std/Test.sol";
 import {DSCEngine} from "../../src/DSCEngine.sol";
 import {DecentralizedStableCoin} from "../../src/DecentralizedStableCoin.sol";
 import {ERC20Mock} from "@openzeppelin/contracts/mocks/ERC20Mock.sol";
+import {MockV3Aggregator} from "../mocks/MockV3Aggregator.sol";
 
 contract Handler is Test {
     DSCEngine dsce;
@@ -13,7 +14,7 @@ contract Handler is Test {
 
     ERC20Mock weth;
     ERC20Mock wbtc;
-
+    MockV3Aggregator public ethUsdPriceFeed;
     uint96 MAX_DEPOSIT_SIZE = type(uint96).max;
 
     address[] usersWithCollateralDeposited;
@@ -28,7 +29,13 @@ contract Handler is Test {
         address[] memory collateralTokens = dsce.getCollateralTokens();
         weth = ERC20Mock(collateralTokens[0]);
         wbtc = ERC20Mock(collateralTokens[1]);
+        ethUsdPriceFeed = MockV3Aggregator(dsce.getCollateralTokenPriceFeed(address(weth)));
     }
+    // breaks testing:
+    // function updateCollateralPrice(uint96 newPrice) public {
+    //     int256 newPriceInt = int256(uint256(newPrice));
+    //     ethUsdPriceFeed.updateAnswer(newPriceInt);
+    // }
 
     function mintDsc(uint256 amount, uint256 addressSeed) public {
         if (usersWithCollateralDeposited.length == 0) {
